@@ -5,6 +5,6 @@ import { defineConfig } from '@prisma/config';
 
 export default defineConfig({
   datasource: {
-    url: 'file:./dev.db',
+    url: 'file:./prisma/dev.db', // This ensures it looks inside the prisma folder
   },
 });
