@@ -20,8 +20,11 @@
 # production
 /build
 
-#database
-/dev.db
+node_modules
+.next
+.env
+*.db
+prisma/*.db
 
 # Ignore the local SQLite database
 prisma/dev.db
