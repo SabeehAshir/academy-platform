@@ -7,6 +7,7 @@ generator client {
   provider = "prisma-client-js"
 }
 
+
 model User {
   id        String    @id @default(cuid())
   email     String    @unique
@@ -14,13 +15,12 @@ model User {
   role      String    @default("PARENT") 
   students  Student[]
 }
-
 model Student {
-  id          String       @id 
-  name        String
-  age         Int?
-  parentId    String
-  parent      User         @relation(fields: [parentId], references: [id])
+  id        String   @id @default(cuid()) // <--- ADD @default(cuid())
+  name      String
+  age       Int?
+  parentId  String
+  parent    User     @relation(fields: [parentId], references: [id])
   enrollments Enrollment[]
 }
 

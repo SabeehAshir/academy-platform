@@ -26,6 +26,7 @@ export default function LoginPage() {
 
     if (res.ok) {
       // Login Success! Go to Dashboard
+      localStorage.setItem("currentUserId", data.user.id);
       alert("Login Successful! Welcome back.");
       router.push('/dashboard'); 
     } else {
