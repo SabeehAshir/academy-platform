@@ -1,26 +1,142 @@
-@import "tailwindcss";
+/* app/dashboard/dashboard.module.css */
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+.container {
+  padding: 40px;
+  max-width: 900px;
+  margin: 0 auto;
+  font-family: sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+.logoutBtn {
+  padding: 8px 15px;
+  background-color: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.logoutBtn:hover {
+  background-color: #cc0000;
+}
+
+/* The layout grid */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+}
+
+/* Common Card Style */
+.card {
+  border: 1px solid #ccc;
+  padding: 20px;
+  border-radius: 10px;
+  background-color: #f9f9f9;
+}
+
+/* Form Styles */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.label {
+  font-size: 12px;
+  font-weight: bold;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.input {
+  padding: 10px;
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-sizing: border-box; /* Ensures padding doesn't break width */
+}
+
+.addBtn {
+  padding: 12px;
+  background-color: #0070f3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.addBtn:hover {
+  background-color: #005bb5;
+}
+
+/* Message Box */
+.messageBox {
+  margin-top: 15px;
+  padding: 15px;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.success {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #a5d6a7;
+}
+
+.error {
+  background-color: #ffebee;
+  color: #c62828;
+  border: 1px solid #ef9a9a;
+}
+
+.info {
+  background-color: #e3f2fd;
+  color: #0d47a1;
+  border: 1px solid #90caf9;
+}
+
+/* Student List Item */
+.studentItem {
+  padding: 15px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.studentName {
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.studentDetails {
+  color: #666;
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+.idBadge {
+  font-family: monospace;
+  background-color: #eee;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+/* Mobile Responsiveness (Bonus!) */
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr; /* Stack columns on phone */
   }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }

@@ -1,27 +1,59 @@
 "use client";
 import { useState } from "react";
+import styles from './register.module.css'; // Using the shared styles
 
 export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    setError(""); // Reset error on new attempt
+
     const res = await fetch("/api/register", {
       method: "POST",
+      headers: { "Content-Type": "application/json" }, // Good practice to include
       body: JSON.stringify({ email, password }),
     });
-    if (res.ok) window.location.href = "/login";
+
+    if (res.ok) {
+      window.location.href = "/login";
+    } else {
+      const data = await res.json();
+      setError(data.error || "Registration failed");
+    }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
-      <form onSubmit={handleRegister} className="p-8 border rounded-lg shadow-md">
-        <h1 className="text-2xl font-bold mb-4">Create Account</h1>
-        <input type="email" placeholder="Email" onChange={(e)=>setEmail(e.target.value)} className="border p-2 mb-4 w-full" required />
-        <input type="password" placeholder="Password" onChange={(e)=>setPassword(e.target.value)} className="border p-2 mb-4 w-full" required />
-        <button className="bg-green-600 text-white p-2 w-full rounded">Sign Up</button>
-      </form>
+    <div className={styles.wrapper}>
+      <div className={styles.card}>
+        <h1 className={styles.title}>Create Account</h1>
+        
+        {error && <div className={styles.error}>{error}</div>}
+        
+        <form onSubmit={handleRegister} className={styles.form}>
+          <input 
+            type="email" 
+            placeholder="Email" 
+            className={styles.input} 
+            onChange={(e) => setEmail(e.target.value)} 
+            required 
+          />
+          <input 
+            type="password" 
+            placeholder="Password" 
+            className={styles.input} 
+            onChange={(e) => setPassword(e.target.value)} 
+            required 
+          />
+          <button className={styles.button}>Sign Up</button>
+        </form>
+        
+        <p style={{ marginTop: '15px', textAlign: 'center', fontSize: '14px', color: '#666' }}>
+          Already have an account? <a href="/login" style={{ color: '#0070f3' }}>Login here</a>
+        </p>
+      </div>
     </div>
   );
 }

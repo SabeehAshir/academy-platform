@@ -41,3 +41,70 @@ export async function POST(request) {
     return NextResponse.json({ error: "Failed to add student" }, { status: 500 });
   }
 }
+// app/api/students/route.js
+
+// ... (keep your existing POST function here) ...
+
+export async function GET(request) {
+  try {
+    // 1. Get the URL parameters (e.g., ?parentId=123)
+    const { searchParams } = new URL(request.url);
+    const parentId = searchParams.get('parentId');
+
+    if (!parentId) {
+      return NextResponse.json({ error: 'Parent ID is required' }, { status: 400 });
+    }
+
+    // 2. Find all students belonging to this parent
+    const students = await prisma.student.findMany({
+      where: {
+        parentId: parentId
+      },
+      orderBy: {
+        name: 'asc' // Sort alphabetically
+      }
+    });
+
+    return NextResponse.json(students);
+
+  } catch (error) {
+    console.error("Error fetching students:", error);
+    return NextResponse.json({ error: "Failed to fetch students" }, { status: 500 });
+  }
+}
+// app/api/students/route.js
+
+// ... keep existing POST and GET functions ...
+
+export async function DELETE(request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    await prisma.student.delete({
+      where: { id: id },
+    });
+
+    return NextResponse.json({ message: "Student deleted" });
+  } catch (error) {
+    return NextResponse.json({ error: "Delete failed" }, { status: 500 });
+  }
+}
+
+export async function PATCH(request) {
+  try {
+    const { id, name, age } = await request.json();
+
+    const updatedStudent = await prisma.student.update({
+      where: { id: id },
+      data: { 
+        name: name, 
+        age: parseInt(age) 
+      },
+    });
+
+    return NextResponse.json(updatedStudent);
+  } catch (error) {
+    return NextResponse.json({ error: "Update failed" }, { status: 500 });
+  }
+}
