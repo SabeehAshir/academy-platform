@@ -45,9 +45,12 @@ export async function POST(request) {
 
 // ... (keep your existing POST function here) ...
 
+// app/api/students/route.js
+
+// ... keep imports and POST function ...
+
 export async function GET(request) {
   try {
-    // 1. Get the URL parameters (e.g., ?parentId=123)
     const { searchParams } = new URL(request.url);
     const parentId = searchParams.get('parentId');
 
@@ -55,13 +58,16 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Parent ID is required' }, { status: 400 });
     }
 
-    // 2. Find all students belonging to this parent
     const students = await prisma.student.findMany({
-      where: {
-        parentId: parentId
-      },
-      orderBy: {
-        name: 'asc' // Sort alphabetically
+      where: { parentId: parentId },
+      orderBy: { name: 'asc' },
+      // NEW: Include the enrollments and the course details!
+      include: {
+        enrollments: {
+          include: {
+            course: true
+          }
+        }
       }
     });
 
@@ -72,9 +78,6 @@ export async function GET(request) {
     return NextResponse.json({ error: "Failed to fetch students" }, { status: 500 });
   }
 }
-// app/api/students/route.js
-
-// ... keep existing POST and GET functions ...
 
 export async function DELETE(request) {
   try {

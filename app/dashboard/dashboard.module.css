@@ -64,6 +64,122 @@
   cursor: pointer;
   font-size: 12px;
 }
+/* COURSE SECTION STYLES */
+.courseSection {
+  margin-top: 50px;
+  border-top: 2px dashed #eee;
+  padding-top: 30px;
+}
+
+.courseGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Responsive Grid */
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.courseCard {
+  background: white;
+  border: 1px solid #ddd;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  color: #333; /* Ensure text is dark */
+}
+
+.courseTitle {
+  font-size: 18px;
+  font-weight: bold;
+  color: #0070f3;
+  margin-bottom: 5px;
+}
+
+.courseDesc {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 15px;
+  min-height: 40px; /* Aligns buttons nicely */
+}
+
+.enrollRow {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+  align-items: center;
+}
+
+.studentSelect {
+  flex: 1; /* Takes up available space */
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: white;
+  color: black;
+}
+
+.enrollBtn {
+  background-color: #28a745; /* Green */
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.enrollBtn:hover {
+  background-color: #218838;
+}
+/* Status Badges */
+.badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: bold;
+  text-transform: uppercase;
+  display: inline-block;
+  margin-left: 10px;
+}
+
+.badgePending {
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
+}
+
+.badgeApproved {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+/* My Classes Section (Inside the student card) */
+.enrolledList {
+  margin-top: 15px;
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+}
+
+.enrolledItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 14px;
+}
+
+.zoomLink {
+  color: #0070f3;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.lockedMessage {
+  color: #999;
+  font-style: italic;
+  font-size: 12px;
+}
 
 .editBtn:hover { background: #e6b800; }
 .deleteBtn:hover { background: #cc0000; }

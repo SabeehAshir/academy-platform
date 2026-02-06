@@ -1,40 +1,62 @@
-datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
-}
+// prisma/schema.prisma
 
 generator client {
   provider = "prisma-client-js"
 }
 
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
 
+// 1. THE PARENT
 model User {
-  id        String    @id @default(cuid())
-  email     String    @unique
-  password  String
-  role      String    @default("PARENT") 
-  students  Student[]
-}
-model Student {
-  id        String   @id @default(cuid()) // <--- ADD @default(cuid())
-  name      String
-  age       Int?
-  parentId  String
-  parent    User     @relation(fields: [parentId], references: [id])
-  enrollments Enrollment[]
+  id       String    @id @default(cuid())
+  email    String    @unique
+  password String
+  role     String    @default("PARENT")
+  students Student[]
 }
 
+// 2. THE CHILD
+model Student {
+  id          String       @id @default(cuid())
+  name        String
+  age         Int?
+  parentId    String
+  parent      User         @relation(fields: [parentId], references: [id])
+  
+  enrollments Enrollment[] 
+}
+
+// 3. THE CLASS
 model Course {
   id          String       @id @default(cuid())
   title       String
-  zoomLink    String?      
+  description String?
+  price       Int          @default(0)
+  zoomLink    String?
+  category    String       @default("General") // e.g., "Keystage 2", "A-Levels", "Languages"
+  minAge      Int          @default(0)         // For age restriction
+  maxAge      Int          @default(99)        // For age restriction
+  
   enrollments Enrollment[]
 }
 
+// prisma/schema.prisma
+
 model Enrollment {
   id        String   @id @default(cuid())
+  
   studentId String
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
   courseId  String
-  student   Student  @relation(fields: [studentId], references: [id])
   course    Course   @relation(fields: [courseId], references: [id])
+
+  joinedAt  DateTime @default(now())
+  
+  status    String   @default("PENDING") // Can be: PENDING, APPROVED, REJECTED
+
+  @@unique([studentId, courseId]) 
 }
