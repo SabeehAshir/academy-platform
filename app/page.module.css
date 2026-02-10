@@ -1,0 +1,151 @@
+/* app/page.module.css */
+.container {
+  font-family: sans-serif;
+  color: #333;
+}
+
+/* NAVBAR */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* app/page.module.css */
+
+
+/* app/page.module.css */
+
+/* The container for both Logo + Text */
+.logoBrand {
+  display: flex;
+  align-items: center;
+  gap: 12px; /* Space between logo and text */
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* The Text styling */
+.logoText {
+  font-size: 24px;
+  font-weight: 800;
+  color: #0070f3;
+  letter-spacing: -0.5px;
+}
+
+/* The Image styling - Fixes the stretching! */
+.logoImage {
+  width: auto;      
+  height: 50px;     
+  object-fit: contain; 
+}
+
+.navLinks {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.link {
+  text-decoration: none;
+  color: #555;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.link:hover { color: #0070f3; }
+
+.loginBtn {
+  background-color: #0070f3;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+.loginBtn:hover { background-color: #005bb5; }
+
+/* HERO SECTION */
+.hero {
+  text-align: center;
+  padding: 100px 20px;
+  background: linear-gradient(180deg, #f0f7ff 0%, #ffffff 100%);
+}
+
+.title {
+  font-size: 3.5rem;
+  font-weight: 800;
+  margin-bottom: 20px;
+  line-height: 1.2;
+}
+
+.highlight {
+  color: #0070f3;
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  color: #666;
+  max-width: 600px;
+  margin: 0 auto 40px;
+}
+
+.ctaBtn {
+  display: inline-block;
+  background-color: #0070f3;
+  color: white;
+  padding: 15px 30px;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgba(0,118,255,0.3);
+  transition: transform 0.2s;
+}
+
+.ctaBtn:hover { transform: translateY(-2px); }
+
+/* FEATURES GRID */
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 40px;
+  padding: 80px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.featureCard {
+  text-align: center;
+  padding: 30px;
+  border-radius: 12px;
+  border: 1px solid #eee;
+  transition: box-shadow 0.2s;
+}
+
+.featureCard:hover {
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.icon {
+  font-size: 40px;
+  margin-bottom: 20px;
+  display: block;
+}
+
+.footer {
+  text-align: center;
+  padding: 40px;
+  background-color: #fafafa;
+  color: #888;
+  font-size: 14px;
+  margin-top: 50px;
+}
