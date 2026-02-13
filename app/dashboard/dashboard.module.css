@@ -316,6 +316,22 @@
   color: #666;
   font-size: 12px;
 }
+/* Add this to dashboard.module.css */
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr; /* Left form gets 1 part space, Right list gets 1.5 parts */
+  gap: 40px;
+  align-items: start; /* Keeps the form from stretching vertically */
+  margin-bottom: 50px;
+}
+
+/* Mobile Responsiveness: Stack them on small screens! */
+@media (max-width: 800px) {
+  .grid {
+    grid-template-columns: 1fr; /* 1 single column on phones */
+  }
+}
 
 /* GRID FOR AVAILABLE COURSES */
 .courseGrid {

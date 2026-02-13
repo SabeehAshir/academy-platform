@@ -15,7 +15,8 @@ export default function AdminDashboard() {
     title: '', description: '', minAge: 5, maxAge: 18, category: 'General', zoomLink: ''
   });
 
-  // NEW: State for the Student Directory
+  const [showDirectory, setShowDirectory] = useState(false);
+  const [viewingStudent, setViewingStudent] = useState(null); 
   const [allStudents, setAllStudents] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -23,30 +24,22 @@ export default function AdminDashboard() {
   useEffect(() => {
     const checkAccessAndLoad = async () => {
       const userId = localStorage.getItem("currentUserId");
-
-      if (!userId) {
-        router.push('/login');
-        return;
-      }
+      if (!userId) return router.push('/login');
 
       const roleRes = await fetch(`/api/check-role?userId=${userId}`);
       const roleData = await roleRes.json();
 
       if (roleData.role !== 'ADMIN') {
         alert("⛔ Access Denied: Admins Only.");
-        router.push('/dashboard'); 
-        return;
+        return router.push('/dashboard'); 
       }
 
-      // If Admin, load BOTH pending requests AND all students
       await fetchPendingRequests();
-      await fetchAllStudents(); // <-- NEW
+      await fetchAllStudents(); 
     };
-
     checkAccessAndLoad();
-  }, []);
+  }, [router]);
 
-  // --- FETCH DATA ---
   const fetchPendingRequests = async () => {
     try {
       const res = await fetch('/api/admin/pending');
@@ -55,7 +48,6 @@ export default function AdminDashboard() {
     finally { setLoading(false); }
   };
 
-  // NEW: Fetch All Students
   const fetchAllStudents = async () => {
     try {
       const res = await fetch('/api/admin/students');
@@ -63,7 +55,6 @@ export default function AdminDashboard() {
     } catch (error) { console.error("Failed to load students"); }
   };
 
-  // --- HANDLE APPROVALS ---
   const handleDecision = async (enrollmentId, status) => {
     setRequests(prev => prev.filter(req => req.id !== enrollmentId)); 
     await fetch('/api/admin/enrollment', {
@@ -73,7 +64,6 @@ export default function AdminDashboard() {
     });
   };
 
-  // --- CREATE COURSE ---
   const handleCreateCourse = async (e) => {
     e.preventDefault();
     const res = await fetch('/api/courses/create', {
@@ -86,115 +76,68 @@ export default function AdminDashboard() {
       alert("✅ Course Created Successfully!");
       setShowCreateForm(false);
       setNewCourse({ title: '', description: '', minAge: 5, maxAge: 18, category: 'General', zoomLink: '' });
-    } else {
-      alert("❌ Failed to create course");
-    }
+    } else alert("❌ Failed to create course");
   };
 
-  // NEW: DELETE STUDENT
   const handleDeleteStudent = async (id) => {
     if (!confirm("Are you sure? This removes the student and all their classes.")) return;
-    
     const res = await fetch(`/api/admin/students/delete?id=${id}`, { method: 'DELETE' });
     if (res.ok) {
-      fetchAllStudents(); // Reload the list after deleting
-    } else {
-      alert("Failed to delete student.");
-    }
+      fetchAllStudents(); 
+      setViewingStudent(null); 
+    } else alert("Failed to delete student.");
   };
 
-  
-  // Filter Logic for Student Directory
-  const filteredStudents = allStudents.filter(s => {
-    const matchName = s.name?.toLowerCase().includes(searchTerm.toLowerCase());
-    // Convert the ID to a string so .includes() doesn't crash
-    const matchId = s.studentId && String(s.studentId).includes(searchTerm);
-    
-    return matchName || matchId;
-  });
-  // --- IF LOADING, SHOW NOTHING (Or a spinner) ---
-  if (loading) {
-    return <div style={{padding:'50px', textAlign:'center'}}>Checking Security clearance... 🕵️‍♂️</div>;
-  }
+  const handleLogout = () => {
+    localStorage.removeItem("currentUserId");
+    router.push('/login');
+  };
 
-  // --- RENDER ADMIN PAGE ---
+  // Safe Search Filter
+  const filteredStudents = allStudents.filter(s => {
+    if (!searchTerm) return true;
+    const term = searchTerm.toLowerCase().trim();
+    const nameMatch = `${s.firstName} ${s.surname}`.toLowerCase().includes(term);
+    const idMatch = s.studentId && String(s.studentId).includes(term);
+    return nameMatch || idMatch;
+  });
+
+  if (loading) return <div className={styles.loadingState}>Checking Security clearance... 🕵️‍♂️</div>;
+
   return (
     <div className={styles.container}>
+      
+      {/* --- COMMAND CENTER HEADER --- */}
       <div className={styles.header}>
-        <h1 className={styles.title}>🛡️ Admin Command Center</h1>
-        <div style={{display:'flex', gap:'10px'}}>
-             <button onClick={() => setShowCreateForm(!showCreateForm)} className={styles.approveBtn} style={{backgroundColor:'#0070f3'}}>
-              + New Course
-            </button>
+        <h1 className={styles.title}>🛡️ Admin </h1>
+        <div className={styles.headerNav}>
             <button onClick={() => router.push('/dashboard')} className={styles.backBtn}>
-              Back to Dashboard
+              Parent View
+            </button>
+            <button onClick={handleLogout} className={styles.logoutBtn}>
+              Logout
             </button>
         </div>
       </div>
 
-      {/* --- MODAL: CREATE COURSE --- */}
-      {showCreateForm && (
-        <div className={styles.modalOverlay} onClick={() => setShowCreateForm(false)}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <button className={styles.closeIcon} onClick={() => setShowCreateForm(false)}>✕</button>
+      {/* --- QUICK ACTIONS ROW --- */}
+      <div className={styles.actionRow}>
+        <button onClick={() => setShowCreateForm(true)} className={styles.newCourseBtn}>
+          ➕ New Course
+        </button>
+        <button onClick={() => setShowDirectory(true)} className={styles.directoryBtn}>
+          👥 Student Directory
+        </button>
+      </div>
 
-            <h2 style={{marginTop:0}}>➕ Create New Class</h2>
-            <p style={{color:'#666', fontSize:'14px', marginBottom:'20px'}}>Add a new course to the academy catalog.</p>
-
-            <form onSubmit={handleCreateCourse}>
-              <div className={styles.formGroup}>
-                <label>Course Title</label>
-                <input className={styles.input} placeholder="e.g. Advanced Chemistry" value={newCourse.title} onChange={e => setNewCourse({...newCourse, title: e.target.value})} required />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label>Description</label>
-                <textarea className={styles.input} placeholder="Brief description..." value={newCourse.description} onChange={e => setNewCourse({...newCourse, description: e.target.value})} rows={3} />
-              </div>
-
-              <div style={{display:'flex', gap:'15px'}}>
-                <div className={styles.formGroup} style={{flex:1}}>
-                  <label>Min Age</label>
-                  <input type="number" className={styles.input} value={newCourse.minAge} onChange={e => setNewCourse({...newCourse, minAge: +e.target.value})} />
-                </div>
-                <div className={styles.formGroup} style={{flex:1}}>
-                  <label>Max Age</label>
-                  <input type="number" className={styles.input} value={newCourse.maxAge} onChange={e => setNewCourse({...newCourse, maxAge: +e.target.value})} />
-                </div>
-              </div>
-
-              <div className={styles.formGroup}>
-                <label>Category</label>
-                <select className={styles.input} value={newCourse.category} onChange={e => setNewCourse({...newCourse, category: e.target.value})}>
-                  <option value="General">General</option>
-                  <option value="Keystage 2">Keystage 2</option>
-                  <option value="Keystage 3">Keystage 3</option>
-                  <option value="A-Levels">A-Levels</option>
-                  <option value="Languages">Languages</option>
-                  <option value="Religious Knowledge">Religious Knowledge</option>
-                </select>
-              </div>
-
-              <div className={styles.formGroup}>
-                <label>Zoom Link</label>
-                <input className={styles.input} placeholder="https://zoom.us/j/..." value={newCourse.zoomLink} onChange={e => setNewCourse({...newCourse, zoomLink: e.target.value})} />
-              </div>
-
-              <button type="submit" className={styles.approveBtn} style={{width:'100%', marginTop:'10px'}}>Publish Course</button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* --- SECTION 1: PENDING APPROVALS --- */}
-      <h2>Pending Approvals</h2>
-      
+      {/* --- MAIN PAGE: PENDING APPROVALS ONLY --- */}
+      <h2 className={styles.modalTitle}>Pending Approvals</h2>
       {requests.length === 0 ? <p className={styles.emptyState}>All caught up! 🎉</p> : (
-        <div style={{marginBottom: '40px'}}>
+        <div className={styles.pendingContainer}>
           {requests.map((req) => (
             <div key={req.id} className={styles.requestCard}>
               <div className={styles.infoGroup}>
-                <span className={styles.studentName}>{req.student.name}</span>
+                <span className={styles.studentName}>{req.student.firstName} {req.student.surname}</span>
                 <span className={styles.courseName}>{req.course.title}</span>
                 <span className={styles.parentInfo}>{req.student.parent?.email}</span>
               </div>
@@ -207,56 +150,147 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* --- SECTION 2: NEW STUDENT DIRECTORY & SEARCH --- */}
-      <h2 style={{borderTop: '2px solid #eee', paddingTop: '30px'}}>Student Directory</h2>
-      <p style={{color:'#666', marginBottom:'15px'}}>Search and manage all enrolled students.</p>
-      
-      <div style={{marginBottom: '20px'}}>
-        <input 
-          type="text" 
-          placeholder="🔍 Search by Student ID (e.g. 66644) or Name..." 
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '16px'}}
-        />
-      </div>
+      {/* --- MODAL 1: CREATE COURSE --- */}
+      {showCreateForm && (
+        <div className={styles.modalOverlay} onClick={() => setShowCreateForm(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>➕ Create New Class</h2>
+              <button className={styles.closeIcon} onClick={() => setShowCreateForm(false)}>✕</button>
+            </div>
+            
+            <form onSubmit={handleCreateCourse}>
+              <div className={styles.formGroup}>
+                <label>Course Title</label>
+                <input className={styles.input} value={newCourse.title} onChange={e => setNewCourse({...newCourse, title: e.target.value})} required />
+              </div>
+              <div className={styles.formGroup}>
+                <label>Description</label>
+                <textarea className={styles.input} value={newCourse.description} onChange={e => setNewCourse({...newCourse, description: e.target.value})} rows={3} />
+              </div>
+              <div className={styles.formRow}>
+                <div className={`${styles.formGroup} ${styles.flex1}`}>
+                  <label>Min Age</label>
+                  <input type="number" className={styles.input} value={newCourse.minAge} onChange={e => setNewCourse({...newCourse, minAge: +e.target.value})} />
+                </div>
+                <div className={`${styles.formGroup} ${styles.flex1}`}>
+                  <label>Max Age</label>
+                  <input type="number" className={styles.input} value={newCourse.maxAge} onChange={e => setNewCourse({...newCourse, maxAge: +e.target.value})} />
+                </div>
+              </div>
+              <div className={styles.formGroup}>
+                <label>Category</label>
+                <select className={styles.input} value={newCourse.category} onChange={e => setNewCourse({...newCourse, category: e.target.value})}>
+                  <option value="General">General</option>
+                  <option value="Keystage 2">Keystage 2</option>
+                  <option value="Keystage 3">Keystage 3</option>
+                  <option value="A-Levels">A-Levels</option>
+                  <option value="Languages">Languages</option>
+                  <option value="Religious Knowledge">Religious Knowledge</option>
+                </select>
+              </div>
+              <div className={styles.formGroup}>
+                <label>Zoom Link</label>
+                <input className={styles.input} value={newCourse.zoomLink} onChange={e => setNewCourse({...newCourse, zoomLink: e.target.value})} />
+              </div>
+              <button type="submit" className={`${styles.approveBtn} ${styles.submitFullBtn}`}>Publish Course</button>
+            </form>
+          </div>
+        </div>
+      )}
 
-      <div style={{background: 'white', border: '1px solid #ddd', borderRadius: '8px', overflow: 'hidden'}}>
-        <table style={{width: '100%', borderCollapse: 'collapse'}}>
-          <thead style={{background: '#f8f9fa'}}>
-            <tr style={{textAlign: 'left', borderBottom: '2px solid #eee'}}>
-              <th style={{padding: '12px 15px'}}>ID</th>
-              <th style={{padding: '12px 15px'}}>Name</th>
-              <th style={{padding: '12px 15px'}}>Parent Email</th>
-              <th style={{padding: '12px 15px'}}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredStudents.length === 0 ? (
-              <tr>
-                <td colSpan="4" style={{padding: '20px', textAlign: 'center', color: '#888'}}>No students found matching "{searchTerm}"</td>
-              </tr>
-            ) : (
-              filteredStudents.map(student => (
-                <tr key={student.id} style={{borderBottom: '1px solid #eee'}}>
-                  <td style={{padding: '12px 15px', fontWeight: 'bold'}}>{student.studentId || "N/A"}</td>
-                  <td style={{padding: '12px 15px'}}>{student.name}</td>
-                  <td style={{padding: '12px 15px', color: '#666'}}>{student.parent?.email}</td>
-                  <td style={{padding: '12px 15px'}}>
-                    <button className={styles.editBtn}>Edit</button>
-                    <button 
-                      className={styles.deleteBtn}
-                      onClick={() => handleDeleteStudent(student.id)}
-                    >
-                      Delete
-                    </button>
-                  </td>
+      {/* --- MODAL 2: STUDENT DIRECTORY --- */}
+      {showDirectory && (
+        <div className={styles.modalOverlay} onClick={() => setShowDirectory(false)}>
+          <div className={styles.directoryModalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>👥 Student Directory</h2>
+              <button className={styles.closeIcon} onClick={() => setShowDirectory(false)}>✕</button>
+            </div>
+            
+            <input 
+              type="text" 
+              placeholder="🔍 Search by Student ID or Name..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className={`${styles.input} ${styles.searchInput}`}
+            />
+
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Parent Name</th>
+                  <th>Actions</th>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              </thead>
+              <tbody>
+                {filteredStudents.map(student => (
+                  <tr key={student.id}>
+                    <td className={styles.tdBold}>{student.studentId || "N/A"}</td>
+                    <td>{student.firstName} {student.surname}</td>
+                    <td className={styles.tdGray}>{student.parent?.name || "Unknown"}</td>
+                    <td>
+                      <button className={styles.viewBtn} onClick={() => setViewingStudent(student)}>View</button>
+                      <button className={styles.deleteBtn} onClick={() => handleDeleteStudent(student.id)}>Delete</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* --- MODAL 3: FULL STUDENT PROFILE --- */}
+      {viewingStudent && (
+        <div className={styles.modalOverlay} onClick={() => setViewingStudent(null)}>
+          <div className={`${styles.modalContent} ${styles.profileModalContent}`} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>📄 Full Profile</h2>
+              <button className={styles.closeIcon} onClick={() => setViewingStudent(null)}>✕</button>
+            </div>
+
+            <div className={styles.profileGrid}>
+              
+              {/* Box 1: Student Details */}
+              <div className={styles.profileBox}>
+                <h4>Student Info</h4>
+                <div className={styles.detailRow}><span className={styles.detailLabel}>Name:</span> <span className={styles.detailValue}>{viewingStudent.firstName} {viewingStudent.surname}</span></div>
+                <div className={styles.detailRow}><span className={styles.detailLabel}>Student ID:</span> <span className={styles.detailValue}>{viewingStudent.studentId || "N/A"}</span></div>
+                <div className={styles.detailRow}><span className={styles.detailLabel}>Age:</span> <span className={styles.detailValue}>{viewingStudent.age || "N/A"}</span></div>
+                <div className={styles.detailRow}><span className={styles.detailLabel}>Year:</span> <span className={styles.detailValue}>{viewingStudent.schoolYear || "N/A"}</span></div>
+                <div className={styles.detailRow}><span className={styles.detailLabel}>Student Email:</span> <span className={styles.detailValue}>{viewingStudent.email || "N/A"}</span></div>
+              </div>
+
+              {/* Box 2: Location & Contact */}
+              <div className={styles.profileBox}>
+                <h4>Account / Parent Info</h4>
+                <div className={styles.detailRow}><span className={styles.detailLabel}>Parent Name:</span> <span className={styles.detailValue}>{viewingStudent.parent?.name || "N/A"}</span></div>
+                <div className={styles.detailRow}><span className={styles.detailLabel}>Phone:</span> <span className={styles.detailValue}>{viewingStudent.parent?.phone || "N/A"}</span></div>
+                <div className={styles.detailRow}><span className={styles.detailLabel}>Login Email:</span> <span className={styles.detailValue}>{viewingStudent.parent?.email || "N/A"}</span></div>
+                <div className={styles.detailRow}><span className={styles.detailLabel}>Jamat:</span> <span className={styles.detailValue}>{viewingStudent.jamat || "N/A"}</span></div>
+                <div className={styles.detailRow}><span className={styles.detailLabel}>City:</span> <span className={styles.detailValue}>{viewingStudent.city || "N/A"}</span></div>
+              </div>
+
+            </div>
+
+            {/* Enrolled Classes summary at the bottom */}
+            <div className={styles.enrollmentsSummary}>
+              <h4 className={styles.summaryTitle}>Current Enrollments</h4>
+              {viewingStudent.enrollments?.length === 0 ? <span className={styles.emptyText}>No classes enrolled.</span> : 
+                viewingStudent.enrollments.map(enr => (
+                  <div key={enr.id} className={styles.enrollmentItem}>
+                    • {enr.course.title} <strong>({enr.status})</strong>
+                  </div>
+                ))
+              }
+            </div>
+
+          </div>
+        </div>
+      )}
 
     </div>
   );

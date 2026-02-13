@@ -10,21 +10,27 @@ export default function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-
+    
     const res = await fetch('/api/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(formData),
+      body: JSON.stringify(formData)
     });
 
     const data = await res.json();
 
     if (res.ok) {
-      localStorage.setItem("currentUserId", data.user.id);
-      router.push('/dashboard'); 
+      // 1. Save the ID so the app remembers who is logged in
+      localStorage.setItem("currentUserId", data.userId);
+      
+      // 2. SMART ROUTING: Check the role and send them to the right page!
+      if (data.role === 'ADMIN') {
+        router.push('/admin');
+      } else {
+        router.push('/dashboard');
+      }
     } else {
-      setError(data.error || "Login failed");
+      alert(`Error: ${data.error}`);
     }
   };
 
