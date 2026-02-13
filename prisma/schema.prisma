@@ -10,23 +10,34 @@ datasource db {
 }
 
 // 1. THE PARENT
+
 model User {
-  id       String    @id @default(cuid())
-  email    String    @unique
-  password String
-  role     String    @default("PARENT")
-  students Student[]
+  id            String       @id @default(cuid())
+  name          String?      // NEW: Account Holder's Full Name
+  phone         String?      // NEW: Contact Number
+  email         String       @unique
+  password      String
+  role          String       @default("PARENT")
+  students      Student[]    
 }
 
 // 2. THE CHILD
 model Student {
   id          String       @id @default(cuid())
-  name        String
-  age         Int?
+  studentId   String?      @unique // e.g., 66644 (Optional)
+  
+  // --- NEW FIELDS ---
+  firstName   String
+  surname     String
+  email       String?      // Student's own email (Optional)
+  jamat       String?      // Where they live/community
+  city        String?
+  schoolYear  String?      // e.g., "Year 10" or "Keystage 4"
+  age         Int?         // Keeping age just in case
+  
   parentId    String
   parent      User         @relation(fields: [parentId], references: [id])
-  
-  enrollments Enrollment[] 
+  enrollments Enrollment[]
 }
 
 // 3. THE CLASS

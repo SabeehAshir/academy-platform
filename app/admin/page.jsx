@@ -1,43 +1,46 @@
 "use client";
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation'; // <--- NEW IMPORT
+import { useRouter } from 'next/navigation';
 import styles from './admin.module.css';
 
 export default function AdminDashboard() {
-  const router = useRouter(); // <--- Setup Router
+  const router = useRouter(); 
   
   // --- STATE ---
   const [requests, setRequests] = useState([]);
-  const [loading, setLoading] = useState(true); // Loading covers the security check too
+  const [loading, setLoading] = useState(true); 
   
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newCourse, setNewCourse] = useState({
     title: '', description: '', minAge: 5, maxAge: 18, category: 'General', zoomLink: ''
   });
 
+  // NEW: State for the Student Directory
+  const [allStudents, setAllStudents] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+
   // --- SECURITY CHECK & DATA LOAD ---
   useEffect(() => {
     const checkAccessAndLoad = async () => {
       const userId = localStorage.getItem("currentUserId");
 
-      // 1. No ID? Go to login.
       if (!userId) {
         router.push('/login');
         return;
       }
 
-      // 2. Ask API: Is this user an Admin?
       const roleRes = await fetch(`/api/check-role?userId=${userId}`);
       const roleData = await roleRes.json();
 
       if (roleData.role !== 'ADMIN') {
         alert("⛔ Access Denied: Admins Only.");
-        router.push('/dashboard'); // Kick them out!
+        router.push('/dashboard'); 
         return;
       }
 
-      // 3. If we are still here, we are an Admin. Load the data.
-      fetchPendingRequests();
+      // If Admin, load BOTH pending requests AND all students
+      await fetchPendingRequests();
+      await fetchAllStudents(); // <-- NEW
     };
 
     checkAccessAndLoad();
@@ -48,8 +51,16 @@ export default function AdminDashboard() {
     try {
       const res = await fetch('/api/admin/pending');
       if (res.ok) setRequests(await res.json());
-    } catch (error) { console.error("Failed to load"); } 
+    } catch (error) { console.error("Failed to load requests"); } 
     finally { setLoading(false); }
+  };
+
+  // NEW: Fetch All Students
+  const fetchAllStudents = async () => {
+    try {
+      const res = await fetch('/api/admin/students');
+      if (res.ok) setAllStudents(await res.json());
+    } catch (error) { console.error("Failed to load students"); }
   };
 
   // --- HANDLE APPROVALS ---
@@ -80,6 +91,27 @@ export default function AdminDashboard() {
     }
   };
 
+  // NEW: DELETE STUDENT
+  const handleDeleteStudent = async (id) => {
+    if (!confirm("Are you sure? This removes the student and all their classes.")) return;
+    
+    const res = await fetch(`/api/admin/students/delete?id=${id}`, { method: 'DELETE' });
+    if (res.ok) {
+      fetchAllStudents(); // Reload the list after deleting
+    } else {
+      alert("Failed to delete student.");
+    }
+  };
+
+  
+  // Filter Logic for Student Directory
+  const filteredStudents = allStudents.filter(s => {
+    const matchName = s.name?.toLowerCase().includes(searchTerm.toLowerCase());
+    // Convert the ID to a string so .includes() doesn't crash
+    const matchId = s.studentId && String(s.studentId).includes(searchTerm);
+    
+    return matchName || matchId;
+  });
   // --- IF LOADING, SHOW NOTHING (Or a spinner) ---
   if (loading) {
     return <div style={{padding:'50px', textAlign:'center'}}>Checking Security clearance... 🕵️‍♂️</div>;
@@ -154,10 +186,11 @@ export default function AdminDashboard() {
         </div>
       )}
 
+      {/* --- SECTION 1: PENDING APPROVALS --- */}
       <h2>Pending Approvals</h2>
       
       {requests.length === 0 ? <p className={styles.emptyState}>All caught up! 🎉</p> : (
-        <div>
+        <div style={{marginBottom: '40px'}}>
           {requests.map((req) => (
             <div key={req.id} className={styles.requestCard}>
               <div className={styles.infoGroup}>
@@ -173,6 +206,58 @@ export default function AdminDashboard() {
           ))}
         </div>
       )}
+
+      {/* --- SECTION 2: NEW STUDENT DIRECTORY & SEARCH --- */}
+      <h2 style={{borderTop: '2px solid #eee', paddingTop: '30px'}}>Student Directory</h2>
+      <p style={{color:'#666', marginBottom:'15px'}}>Search and manage all enrolled students.</p>
+      
+      <div style={{marginBottom: '20px'}}>
+        <input 
+          type="text" 
+          placeholder="🔍 Search by Student ID (e.g. 66644) or Name..." 
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '16px'}}
+        />
+      </div>
+
+      <div style={{background: 'white', border: '1px solid #ddd', borderRadius: '8px', overflow: 'hidden'}}>
+        <table style={{width: '100%', borderCollapse: 'collapse'}}>
+          <thead style={{background: '#f8f9fa'}}>
+            <tr style={{textAlign: 'left', borderBottom: '2px solid #eee'}}>
+              <th style={{padding: '12px 15px'}}>ID</th>
+              <th style={{padding: '12px 15px'}}>Name</th>
+              <th style={{padding: '12px 15px'}}>Parent Email</th>
+              <th style={{padding: '12px 15px'}}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredStudents.length === 0 ? (
+              <tr>
+                <td colSpan="4" style={{padding: '20px', textAlign: 'center', color: '#888'}}>No students found matching "{searchTerm}"</td>
+              </tr>
+            ) : (
+              filteredStudents.map(student => (
+                <tr key={student.id} style={{borderBottom: '1px solid #eee'}}>
+                  <td style={{padding: '12px 15px', fontWeight: 'bold'}}>{student.studentId || "N/A"}</td>
+                  <td style={{padding: '12px 15px'}}>{student.name}</td>
+                  <td style={{padding: '12px 15px', color: '#666'}}>{student.parent?.email}</td>
+                  <td style={{padding: '12px 15px'}}>
+                    <button className={styles.editBtn}>Edit</button>
+                    <button 
+                      className={styles.deleteBtn}
+                      onClick={() => handleDeleteStudent(student.id)}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
     </div>
   );
 }

@@ -1,42 +1,32 @@
-import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
-// Note: In a real app, you'd use 'bcryptjs' to hash the password here
-// For now, let's get the logic working first!
+// app/api/auth/register/route.js
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 
-export async function POST(req) {
+export async function POST(request) {
   try {
-    const { email, password } = await req.json();
+    // 1. Grab the new fields from the incoming request
+    const { name, email, phone, password } = await request.json();
 
-    // 1. Check if the parent already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    });
-
+    // 2. Check if the user already exists
+    const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
-      return NextResponse.json(
-        { error: "An account with this email already exists." },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Email already exists" }, { status: 400 });
     }
 
-    // 2. Create the Parent User
-    const user = await prisma.user.create({
+    // 3. Create the user with the new details
+    const newUser = await prisma.user.create({
       data: {
-        email,
-        password, // Reminder: Hash this later!
-        role: "PARENT",
-      },
+        name: name,
+        email: email,
+        phone: phone,
+        password: password, // Note: In a production app, you would hash this!
+      }
     });
 
-    return NextResponse.json(
-      { message: "Parent account created!", userId: user.id },
-      { status: 201 }
-    );
+    return NextResponse.json({ message: "Account created successfully", userId: newUser.id }, { status: 201 });
+
   } catch (error) {
-    console.error(error);
-    return NextResponse.json(
-      { error: "Something went wrong during registration." },
-      { status: 500 }
-    );
+    console.error("Registration error:", error);
+    return NextResponse.json({ error: "Failed to create account" }, { status: 500 });
   }
 }

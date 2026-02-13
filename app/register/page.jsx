@@ -1,58 +1,77 @@
+// app/register/page.jsx
 "use client";
-import { useState } from "react";
-import styles from './register.module.css'; // Using the shared styles
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import styles from './register.module.css';
 
 export default function Register() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const router = useRouter();
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    password: ''
+  });
 
-  const handleRegister = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(""); // Reset error on new attempt
-
-    const res = await fetch("/api/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" }, // Good practice to include
-      body: JSON.stringify({ email, password }),
+    
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData)
     });
 
     if (res.ok) {
-      window.location.href = "/login";
+      alert("Account created! Please log in.");
+      router.push('/login');
     } else {
       const data = await res.json();
-      setError(data.error || "Registration failed");
+      alert(`Error: ${data.error}`);
     }
   };
 
   return (
-    <div className={styles.wrapper}>
+    <div className={styles.container}>
       <div className={styles.card}>
         <h1 className={styles.title}>Create Account</h1>
+        <p style={{textAlign: 'center', color: '#666', marginBottom: '20px'}}>Parent or Independent Student</p>
         
-        {error && <div className={styles.error}>{error}</div>}
-        
-        <form onSubmit={handleRegister} className={styles.form}>
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <input 
+            type="text" 
+            placeholder="Full Name" 
+            className={styles.input}
+            value={formData.name}
+            onChange={e => setFormData({...formData, name: e.target.value})}
+            required
+          />
+          <input 
+            type="tel" 
+            placeholder="Contact Number" 
+            className={styles.input}
+            value={formData.phone}
+            onChange={e => setFormData({...formData, phone: e.target.value})}
+            required
+          />
           <input 
             type="email" 
-            placeholder="Email" 
-            className={styles.input} 
-            onChange={(e) => setEmail(e.target.value)} 
-            required 
+            placeholder="Email Address" 
+            className={styles.input}
+            value={formData.email}
+            onChange={e => setFormData({...formData, email: e.target.value})}
+            required
           />
           <input 
             type="password" 
             placeholder="Password" 
-            className={styles.input} 
-            onChange={(e) => setPassword(e.target.value)} 
-            required 
+            className={styles.input}
+            value={formData.password}
+            onChange={e => setFormData({...formData, password: e.target.value})}
+            required
           />
-          <button className={styles.button}>Sign Up</button>
+          <button type="submit" className={styles.submitBtn}>Sign Up</button>
         </form>
-        
-        <p style={{ marginTop: '15px', textAlign: 'center', fontSize: '14px', color: '#666' }}>
-          Already have an account? <a href="/login" style={{ color: '#0070f3' }}>Login here</a>
-        </p>
       </div>
     </div>
   );
