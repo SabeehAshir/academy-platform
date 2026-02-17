@@ -184,6 +184,8 @@ export default function AdminDashboard() {
                   <option value="General">General</option>
                   <option value="Keystage 2">Keystage 2</option>
                   <option value="Keystage 3">Keystage 3</option>
+                  <option value="Keystage 4">Keystage 4</option>
+                  <option value="11+">11+</option>
                   <option value="A-Levels">A-Levels</option>
                   <option value="Languages">Languages</option>
                   <option value="Religious Knowledge">Religious Knowledge</option>

@@ -169,10 +169,9 @@ export default function Dashboard() {
   return (
     <div className={styles.container}>
       
-      {/* 1. DYNAMIC HEADER */}
+      {/* 1. HEADER */}
       <div className={styles.header}>
-        <h1>🎓 {accountProfile.name ? `${accountProfile.name.split(' ')[0]}'s Dashboard` : 'Dashboard'}</h1>
-        
+        <h1>🎓 {accountProfile.name ? `${accountProfile.name.split(' ')[0]}'s Dashboard` : 'My Dashboard'}</h1>
         <div className={styles.headerActions}>
           <button onClick={() => { localStorage.removeItem("currentUserId"); window.location.href = "/login"; }} className={styles.logoutBtn}>
             Logout
@@ -180,65 +179,70 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* 2. DASHBOARD MAIN GRID */}
       <div className={styles.grid}>
         
-        {/* LEFT: FORM */}
-        <div>
-          <div className={styles.card}>
-            <h3>{isEditing ? "📝 Edit Student" : "➕ Add a Student"}</h3>
-            <form onSubmit={isEditing ? handleUpdate : handleAddStudent} className={styles.form}>
-              
-              <div className={styles.inputRowFirst}>
-                <input type="text" placeholder="First Name *" value={formData.firstName} onChange={(e) => setFormData({...formData, firstName: e.target.value})} required className={`${styles.input} ${styles.flexInput}`} />
-                <input type="text" placeholder="Surname *" value={formData.surname} onChange={(e) => setFormData({...formData, surname: e.target.value})} required className={`${styles.input} ${styles.flexInput}`} />
-              </div>
+        {/* LEFT: REGISTRATION FORM */}
+        <section className={styles.card}>
+          <h3 className={styles.sectionTitle}>✨ {isEditing ? "Edit Student Details" : "Register a New Student"}</h3>
+          <form onSubmit={isEditing ? handleUpdate : handleAddStudent} className={styles.form}>
+            
+            <div className={styles.inputRowFirst}>
+              <input type="text" placeholder="First Name *" value={formData.firstName} onChange={(e) => setFormData({...formData, firstName: e.target.value})} required className={`${styles.input} ${styles.flexInput}`} />
+              <input type="text" placeholder="Surname *" value={formData.surname} onChange={(e) => setFormData({...formData, surname: e.target.value})} required className={`${styles.input} ${styles.flexInput}`} />
+            </div>
 
-              <div className={styles.inputRow}>
-                <input type="email" placeholder="Student Email (Optional)" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className={`${styles.input} ${styles.flexInput}`} />
-                <input type="text" placeholder="Jamat" value={formData.jamat} onChange={(e) => setFormData({...formData, jamat: e.target.value})} className={`${styles.input} ${styles.flexInput}`} />
-                <input type="text" placeholder="City" value={formData.city} onChange={(e) => setFormData({...formData, city: e.target.value})} className={`${styles.input} ${styles.flexInput}`} />
-              </div>
+            <div className={styles.inputRow}>
+              <input type="email" placeholder="Student Email (Optional)" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className={`${styles.input} ${styles.flexInput}`} />
+              <input type="text" placeholder="AIMS ID 34322" value={formData.studentId} onChange={(e) => setFormData({...formData, studentId: e.target.value})} required className={`${styles.input} ${styles.flexInput}`} />
+            </div>
 
-              <div className={styles.inputRow}>
-                <input type="text" placeholder="School Year (e.g. Year 10)" value={formData.schoolYear} onChange={(e) => setFormData({...formData, schoolYear: e.target.value})} className={`${styles.input} ${styles.flexInput}`} />
-                <input type="number" placeholder="Age" value={formData.age} onChange={(e) => setFormData({...formData, age: e.target.value})} className={`${styles.input} ${styles.smallInput}`} />
-                <input type="text" placeholder="Student ID (Optional)" value={formData.studentId} onChange={(e) => setFormData({...formData, studentId: e.target.value})} disabled={isEditing} className={`${styles.input} ${styles.flexInput} ${isEditing ? styles.disabledInput : ''}`} />
-              </div>
+            <div className={styles.inputRow}>
+              <input type="email" placeholder="Student Email (Optional)" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className={`${styles.input} ${styles.flexInput}`} />
+            </div>
 
-              <button type="submit" className={`${styles.addBtn} ${styles.fullWidthBtn} ${isEditing ? styles.updateModeBtn : ''}`}>
-                {isEditing ? "Update Student" : "Register Student"}
+            <div className={styles.inputRow}>
+              <input type="text" placeholder="Jamat / Community" value={formData.jamat} onChange={(e) => setFormData({...formData, jamat: e.target.value})} className={`${styles.input} ${styles.flexInput}`} />
+              <input type="text" placeholder="City" value={formData.city} onChange={(e) => setFormData({...formData, city: e.target.value})} className={`${styles.input} ${styles.flexInput}`} />
+            </div>
+
+            <div className={styles.inputRow}>
+              <input type="text" placeholder="School Year (e.g. Year 10)" value={formData.schoolYear} onChange={(e) => setFormData({...formData, schoolYear: e.target.value})} className={`${styles.input} ${styles.flexInput}`} />
+              <input type="number" placeholder="Age" value={formData.age} onChange={(e) => setFormData({...formData, age: e.target.value})} className={`${styles.input} ${styles.smallInput}`} />
+            </div>
+
+            <button type="submit" className={`${styles.addBtn} ${styles.fullWidthBtn} ${isEditing ? styles.updateModeBtn : ''}`}>
+              {isEditing ? "💾 Save Changes" : "🚀 Register Student"}
+            </button>
+            
+            {isEditing && (
+              <button type="button" onClick={() => { setIsEditing(false); setFormData({ studentId: '', firstName: '', surname: '', age: '', email: '', jamat: '', city: '', schoolYear: '' }); setMessage(''); }} className={styles.cancelBtn}>
+                Cancel Editing
               </button>
-              
-              {isEditing && (
-                <button type="button" onClick={() => { setIsEditing(false); setFormData({ studentId: '', firstName: '', surname: '', age: '', email: '', jamat: '', city: '', schoolYear: '' }); setMessage(''); }} className={styles.cancelBtn}>
-                  Cancel Edit
-                </button>
-              )}
-            </form>
-            {message && <div className={`${styles.messageBox} ${styles[messageType]}`}>{message}</div>}
-          </div>
-        </div>
+            )}
+          </form>
+          {message && <div className={`${styles.messageBox} ${styles[messageType]}`}>{message}</div>}
+        </section>
 
-        {/* RIGHT COLUMN: The List */}
-        <div>
-          <h3>📋 Your Students</h3>
+        {/* RIGHT: STUDENT LIST */}
+        <section>
+          <h3 className={styles.sectionTitle}>📋 Registered Students</h3>
           {loading ? (
-            <p>Loading...</p>
+            <div className={styles.emptyState}>Loading your records...</div>
           ) : students.length === 0 ? (
-            <p className={styles.emptyState}>No students added yet.</p>
+            <div className={styles.card}>
+              <p className={styles.emptyState}>No students registered yet. Use the form on the left to get started!</p>
+            </div>
           ) : (
             <div className={styles.studentListContainer}>
               {students.map((student) => (
                 <div key={student.id} className={styles.studentItem}>
-                  
                   <div className={styles.studentHeaderRow}>
                     <div>
                       <div className={styles.studentName}>{student.firstName} {student.surname}</div>
                       <div className={styles.studentDetails}>
-                        ID: <span className={styles.idBadge}>{student.studentId || 'N/A'}</span>
-                        <span className={styles.detailSpacing}>Age: {student.age || 'N/A'}</span>
-                        <span className={`${styles.detailSpacing} ${styles.detailGray}`}>{student.schoolYear || ''}</span>
+                        <span className={styles.idBadge}>ID: {student.studentId || 'N/A'}</span>
+                        <span className={styles.detailSpacing}>🎂 Age: {student.age || 'N/A'}</span>
+                        <span className={`${styles.detailSpacing} ${styles.detailGray}`}>🏫 {student.schoolYear || 'Not Specified'}</span>
                       </div>
                     </div>
                     <div className={styles.actions}>
@@ -247,66 +251,67 @@ export default function Dashboard() {
                     </div>
                   </div>
 
+                  {/* ENROLLMENTS SUB-SECTION */}
                   {student.enrollments && student.enrollments.length > 0 && (
                     <div className={styles.enrolledList}>
-                      <strong className={styles.noLinkText}>MY CLASSES:</strong>
+                      <p className={styles.noLinkText}>ACTIVE ENROLLMENTS:</p>
                       {student.enrollments.map((enrollment) => (
                         <div key={enrollment.id} className={styles.enrolledItem}>
-                          <span>
-                            {enrollment.course.title}
-                            <span className={`${styles.badge} ${enrollment.status === 'APPROVED' ? styles.badgeApproved : styles.badgePending}`}>
-                              {enrollment.status}
-                            </span>
+                          <span className={styles.courseTitleSmall}>{enrollment.course.title}</span>
+                          <span className={`${styles.badge} ${enrollment.status === 'APPROVED' ? styles.badgeApproved : styles.badgePending}`}>
+                            {enrollment.status}
                           </span>
-
-                          {enrollment.status === 'APPROVED' ? (
-                            enrollment.course.zoomLink ? (
-                              <a href={enrollment.course.zoomLink} target="_blank" className={styles.zoomLink}>Join Zoom 🎥</a>
-                            ) : (
-                              <span className={styles.noLinkText}>No Link Set</span>
-                            )
-                          ) : (
-                            <span className={styles.lockedMessage}>🔒 Waiting for Admin</span>
-                          )}
                         </div>
                       ))}
                     </div>
                   )}
-
                 </div>
               ))}
             </div>
           )}
-        </div>
+        </section>
       </div>
 
-      {/* 3. COURSE SECTION */}
-      <div className={styles.courseSection}>
-        <h2>📚 Available Courses</h2>
-        {Object.keys(groupedCourses).map(category => (
-          <div key={category} className={styles.categoryWrapper}> 
-            <h3 className={styles.categoryHeader}>{category}</h3> 
-            <div className={styles.courseGrid}>
-              {groupedCourses[category].map(course => (
-                <div key={course.id} className={styles.courseCard}>
-                  <div className={styles.courseTitle}>{course.title}</div>
-                  <p className={styles.courseDesc}>{course.description}</p>
-                  
-                  <form onSubmit={(e) => handleEnroll(e, course)} className={styles.enrollRow}>
-                    <select name="studentId" className={styles.studentSelect} required>
-                      <option value="">Select Child...</option>
-                      {students.map(student => (
-                        <option key={student.id} value={student.id}>{student.firstName}</option>
-                      ))}
-                    </select>
-                    <button type="submit" className={styles.enrollBtn}>Enroll</button>
-                  </form>
-                </div>
-              ))}
-            </div>
+      {/* 3. AVAILABLE COURSES SECTION */}
+      <section className={styles.courseSection}>
+        <h2 className={styles.sectionTitle}>📚 Explore Available Courses</h2>
+        
+        {Object.keys(groupedCourses).length === 0 ? (
+          <div className={styles.card}>
+            <p className={styles.emptyState}>No courses are currently available for enrollment.</p>
           </div>
-        ))}
-      </div>
+        ) : (
+          Object.keys(groupedCourses).map(category => (
+            <div key={category} style={{ marginBottom: '40px' }}>
+              <h3 className={styles.categoryHeader} style={{ marginBottom: '15px', color: '#475569' }}>{category}</h3> 
+              
+              <div className={styles.courseGrid}>
+                {groupedCourses[category].map(course => (
+                  <div key={course.id} className={styles.courseCard}>
+                    <div className={styles.courseTitle}>{course.title}</div>
+                    <p className={styles.courseDesc}>{course.description}</p>
+                    
+                    {/* ENROLLMENT ACTION */}
+                    <form onSubmit={(e) => handleEnroll(e, course)} className={styles.enrollRow}>
+                      <select name="studentId" className={styles.studentSelect} required>
+                        <option value="">Select Student...</option>
+                        {students.map(student => (
+                          <option key={student.id} value={student.id}>
+                            {student.firstName}
+                          </option>
+                        ))}
+                      </select>
+                      <button type="submit" className={styles.enrollBtn}>
+                        Enroll
+                      </button>
+                    </form>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))
+        )}
+      </section>
 
     </div>
   );
